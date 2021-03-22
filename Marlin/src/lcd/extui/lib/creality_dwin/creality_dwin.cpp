@@ -72,7 +72,6 @@
   #include "../../libs/least_squares_fit.h"
   #include "../../libs/vector_3.h"
 #endif
-
 #if ENABLED(HAS_BED_PROBE)
   #include "../../module/probe.h"
 #endif
@@ -89,7 +88,7 @@
 
 #define CORP_WEBSITE_E "github.com/Jyers"
 
-#define BUILD_NUMBER "1.2.1"
+#define BUILD_NUMBER "1.2.2"
 
 #define DWIN_FONT_MENU font8x16
 #define DWIN_FONT_STAT font10x20
@@ -2502,6 +2501,13 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
                   Popup_Handler(Home);
                   gcode.home_all_axes(true);
                 }
+                #if ENABLED(PREHEAT_BEFORE_LEVELING)
+                  Popup_Handler(Heating);
+                  thermalManager.setTargetHotend(LEVELING_NOZZLE_TEMP, 0);
+                  thermalManager.setTargetBed(LEVELING_BED_TEMP);
+                  thermalManager.wait_for_hotend(0);
+                  thermalManager.wait_for_bed_heating();
+                #endif
                 Popup_Handler(Level);
                 gcode.process_subcommands_now_P(PSTR("G29 P0\nG29 P1"));
                 gcode.process_subcommands_now_P(PSTR("G29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nG29 P3\nM420 S1"));
@@ -2520,6 +2526,13 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
                 Popup_Handler(Home);
                 gcode.home_all_axes(true);
               }
+              #if ENABLED(PREHEAT_BEFORE_LEVELING)
+                Popup_Handler(Heating);
+                thermalManager.setTargetHotend(LEVELING_NOZZLE_TEMP, 0);
+                thermalManager.setTargetBed(LEVELING_BED_TEMP);
+                thermalManager.wait_for_hotend(0);
+                thermalManager.wait_for_bed_heating();
+              #endif
               ubl_conf.mesh_step_warning = false;
               ubl_conf.manual_move();
               Draw_Menu(UBLManual);
@@ -3025,7 +3038,6 @@ void CrealityDWINClass::Menu_Item_Handler(uint8_t menu, uint8_t item, bool draw/
           case TUNE_ZOFFSET:
             if (draw) {
               Draw_Menu_Item(row, ICON_FanSpeed, (char*)"Z-Offset");
-              // TODO this does not update when using Up/Down below
               Draw_Float(zoffsetvalue, row, false, 100);
             }
             else {
